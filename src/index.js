@@ -10,6 +10,22 @@ export default function ({ Plugin, types: t }) {
     visitor: {
       Program: {
         exit(path) {
+
+          let isAmdModule = false;
+
+          path.traverse({
+              CallExpression({ node }) {
+                  if (node.callee && node.callee.name === 'define') {
+                    isAmdModule = true;
+                  }
+              }
+          });
+
+          // no point in wrapping something that's already AMD
+          if (isAmdModule) {
+            return;
+          }
+
           let body = templ({
             BODY: path.node.body
           });
